@@ -100,7 +100,7 @@ void main()
         fragColor = Ia*Kd;
         fragColor += I*Kd*NL;
         fragColor += I*specular*pow(HN,shininess);
-        //fragColor.xyz = vec3(shadowCoord.w/100);//debug
+        //fragColor.xyz = vec3(shadowCoord.w/100);//debug test
     }
 //
 //    //testing lighting

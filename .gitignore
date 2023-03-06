@@ -1,2 +1,6 @@
 
 Debug/
+
+*.db
+
+.vs/framework/v16/
