@@ -17,6 +17,7 @@ const bool fullPolyCount = true; // Use false when emulating the graphics pipeli
 #include "math.h"
 #include <iostream>
 #include <stdlib.h>
+#include <time.h>
 
 #include <glbinding/gl/gl.h>
 #include <glbinding/Binding.h>
@@ -34,7 +35,7 @@ using namespace gl;
 #include "object.h"
 #include "texture.h"
 #include "transform.h"
-
+int randX, randY;
 
 struct localLight
 {
@@ -182,6 +183,7 @@ Object* FramedPicture(const glm::mat4& modelTr, const int objectId,
 // number of other parameters.
 void Scene::InitializeScene()
 {
+    srand(time(NULL));
     glEnable(GL_DEPTH_TEST);
     CHECKERROR;
 
@@ -464,6 +466,12 @@ void Scene::BuildTransforms()
     WorldProj = Perspective((ry*width)/height, ry, front, (mode==0) ? 1000 : back);
 
 
+    shadowProj = Perspective(40.0f / lightDist, 40.0f / lightDist, front, back);
+    shadowView = LookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+
+    //shadowProj = WorldProj;//DEBUG REMOVE
+    //shadowView = WorldView;//DEBUG REMOVE
+
     // @@ Print the two matrices (in column-major order) for
     // comparison with the project document.
     //std::cout << "WorldView: " << glm::to_string(WorldView) << std::endl;
@@ -476,6 +484,8 @@ void Scene::BuildTransforms()
 // goals.)
 void Scene::DrawScene()
 {
+    randX = rand() % 1024;
+    randY = rand() % 1024;
     // Set the viewport
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
@@ -498,11 +508,7 @@ void Scene::DrawScene()
     // The lighting algorithm needs the inverse of the WorldView matrix
     WorldInverse = glm::inverse(WorldView);
     
-    shadowProj = Perspective(80.0f / lightDist, 80.0f / lightDist, front, back);
-    shadowView = LookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
 
-    //shadowProj = WorldProj;//DEBUG REMOVE
-    //shadowView = WorldView;//DEBUG REMOVE
 
     ////////////////////////////////////////////////////////////////////////////////
     // Anatomy of a pass:
@@ -659,6 +665,10 @@ void Scene::DrawScene()
     // @@ The scene specific parameters (uniform variables) used by
     // the shader are set here.  Object specific parameters are set in
     // the Draw procedure in object.cpp
+
+    loc = glGetUniformLocation(programId, "randXY");
+    glUniform2f(loc, randX, randY);
+    CHECKERROR;
 
     loc = glGetUniformLocation(programId, "shadowMatrix");
     glUniformMatrix4fv(loc, 1, GL_FALSE, Pntr(shadowMatrix));

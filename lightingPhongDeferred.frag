@@ -45,6 +45,9 @@ float pixelDepth;
 
 uniform vec2 WindowSize;
 
+
+uniform vec2 randXY;
+
 void main()
 {
     //FragData[0].xyz = worldPos;
@@ -109,10 +112,14 @@ void main()
 //    //fragColor = specular;
 //    //fragColor = worldPos/10.0;
 //
-       FragColor.xyz = fragColor;
-//
+       //FragColor.xyz = vec3(texture2D(shadowMap, shadowIndex).w/100);
+       //FragColor.xy = randXY/1024;
+      //FragColor.xyzw = vec4(texture2D(shadowMap, randXY).w/100.0); //sample random points on the shadowMap from 0 to 1024 on x and y.
+      //FragColor.xyzw = vec4(texture2D(shadowMap, randXY).w/100.0);
+      FragColor.xyzw = vec4(texture2D(shadowMap, xy).w/100.0);
+
    //FragColor.xyz = vec3(texture2D(shadowMap, shadowIndex).w/100);
-//   FragColor.xyz = vec3(shadowIndex.x, 0.0, shadowIndex.y);
+  //FragColor.xyz = vec3(shadowIndex.x, 0.0, shadowIndex.y);
 }
 
 

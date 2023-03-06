@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 0);
-    scene.window = glfwCreateWindow(1920,1080, "Graphics Framework", NULL, NULL);
+    scene.window = glfwCreateWindow(1024,1024, "Graphics Framework", NULL, NULL);
     if (!scene.window)  { glfwTerminate();  exit(-1); }
 
     glfwMakeContextCurrent(scene.window);
