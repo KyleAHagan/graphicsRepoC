@@ -37,7 +37,7 @@ uniform sampler2D g3;
 
 uniform sampler2D shadowMap;
 
-in vec4 shadowCoord;
+vec4 shadowCoord;
 vec2 shadowIndex;
 
 float lightDepth;
@@ -45,6 +45,7 @@ float pixelDepth;
 
 uniform vec2 WindowSize;
 
+uniform mat4 shadowMatrix;
 
 uniform vec2 randXY;
 
@@ -69,6 +70,8 @@ void main()
     vec3 lightVec = lightPos - worldPos;
     vec3 eyeVec = eyePos - worldPos;
 
+    shadowCoord = shadowMatrix * vec4(worldPos,1);
+
 
     vec3 ONE = vec3(1.0, 1.0, 1.0);
     vec3 N = normalize(normalVec);
@@ -92,19 +95,27 @@ void main()
     {
         lightDepth = texture2D(shadowMap, shadowIndex).w;
         pixelDepth = shadowCoord.w;
+        //FragColor.xyzw = vec4(shadowIndex.x, shadowIndex.y, 0.0, 1.0);
     }
+//    else
+//    {
+//        FragColor.xyzw = vec4(0.5, 0.5, 0.5, 1.0);
+//        return;
+//    }
     if(pixelDepth > lightDepth + 0.01)
     {
-        fragColor.xyz = Ia * Kd;
+        FragColor.xyz = Ia * Kd;
     }
     else
     {
          //Lighting is diffuse + ambient + specular
-        fragColor = Ia*Kd;
-        fragColor += I*Kd*NL;
-        fragColor += I*specular*pow(HN,shininess);
+        FragColor.xyz = Ia*Kd;
+        FragColor.xyz += I*Kd*NL;
+        FragColor.xyz += I*specular*pow(HN,shininess);
         //fragColor.xyz = vec3(shadowCoord.w/100);//debug test
+
     }
+    //FragColor.xyz = fragColor.xyz;
 //
 //    //testing lighting
 //    //fragColor = abs(N);
@@ -113,11 +124,12 @@ void main()
 //    //fragColor = worldPos/10.0;
 //
        //FragColor.xyz = vec3(texture2D(shadowMap, shadowIndex).w/100);
-       //FragColor.xy = randXY/1024;
       //FragColor.xyzw = vec4(texture2D(shadowMap, randXY).w/100.0); //sample random points on the shadowMap from 0 to 1024 on x and y.
       //FragColor.xyzw = vec4(texture2D(shadowMap, randXY).w/100.0);
-      FragColor.xyzw = vec4(texture2D(shadowMap, xy).w/100.0);
+      //FragColor.xyzw = vec4(texture2D(shadowMap, xy).w/100.0);
+      //FragColor.xyzw = vec4(shadowCoord);
 
+      
    //FragColor.xyz = vec3(texture2D(shadowMap, shadowIndex).w/100);
   //FragColor.xyz = vec3(shadowIndex.x, 0.0, shadowIndex.y);
 }
