@@ -79,9 +79,9 @@ void main()
     if (shadowCoord.w > 0 && shadowIndex.x >= 0 && shadowIndex.x <= 1 && shadowIndex.y >= 0 && shadowIndex.y <= 1)
     {
         lightDepth = texture2D(shadowMap, shadowIndex).x;
-        pixelDepth = shadowCoord.w;
+        pixelDepth = ((shadowCoord.w - 30)/(150-30));
     }
-    if(pixelDepth > lightDepth + 0.01)
+    if(pixelDepth > lightDepth + 0.0001)
     {
         FragColor.xyz = Ia * Kd;
     }
