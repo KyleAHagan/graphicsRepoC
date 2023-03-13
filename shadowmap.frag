@@ -1,32 +1,3 @@
-///////////////////////////////////////////////////////////////////////////
-//// Pixel shader for lighting
-////
-//// Copyright 2013 DigiPen Institute of Technology
-//////////////////////////////////////////////////////////////////////////
-//#version 330
-//
-//
-//
-//in vec4 position;
-//
-////out vec4 FragColor;
-//
-////DEBUGout vec4 FragData[];
-//
-//out vec4 fragColor;
-//
-//void main()
-//{
-//	//gl_FragData[0] = vec4(position.w);
-//	//FragData[0] = position;// debug extra data version of previous statement.
-//	//FragData[1] = position;
-//	//FragData[2] = position;
-//	//FragData[3] = position;
-//	fragColor = vec4(position.w)/100;
-//
-//	fragColor = vec4(0.5f, 0.0f, 1.0f,0.8f);
-//}
-//
 
 /////////////////////////////////////////////////////////////////////////
 // Pixel shader for lighting
@@ -63,8 +34,6 @@ uniform float shininess;
 
 out vec4 FragData[];
 
-//out vec4 FragColor;
-
 in vec4 shadowPosition;
 
 void main()
@@ -72,7 +41,11 @@ void main()
 
     //FragColor.xyz = vec3(shadowPosition.w)/100;
     //FragData[0]= vec4(shadowPosition.w)/100;
-    FragData[0]= shadowPosition;
+    FragData[0].x = shadowPosition.w;
+    FragData[0].y = shadowPosition.w * shadowPosition.w;
+    FragData[0].z = shadowPosition.w * shadowPosition.w  * shadowPosition.w;
+    FragData[0].w = shadowPosition.w * shadowPosition.w  * shadowPosition.w  * shadowPosition.w;
+
     FragData[1]= shadowPosition;
     FragData[2]= shadowPosition;
     FragData[3]= shadowPosition;

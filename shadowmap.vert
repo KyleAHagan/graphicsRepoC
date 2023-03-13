@@ -1,30 +1,3 @@
-///////////////////////////////////////////////////////////////////////////
-//// Vertex shader for lighting
-////
-//// Copyright 2013 DigiPen Institute of Technology
-//////////////////////////////////////////////////////////////////////////
-//#version 430
-//
-//
-//
-//uniform mat4 shadowProj, shadowView, modelTr;
-//
-//in vec4 vertex;
-//
-//out vec4 position;
-//
-//void main()
-//{     
-//    gl_Position = shadowProj * shadowView * modelTr * vertex;
-//    position = gl_Position;
-//}
-
-
-/////////////////////////////////////////////////////////////////////////
-// Vertex shader for lighting
-//
-// Copyright 2013 DigiPen Institute of Technology
-////////////////////////////////////////////////////////////////////////
 #version 430
 
 uniform mat4 WorldView, WorldInverse, WorldProj, ModelTr, NormalTr,shadowProj, shadowView, modelTr;
@@ -45,8 +18,7 @@ void main()
     vec3 eye = (WorldInverse*vec4(0,0,0,1)).xyz;
 
     gl_Position = shadowProj * shadowView*ModelTr*vertex;
-    
-    //    gl_Position = shadowProj * shadowView * modelTr * vertex;
+
     shadowPosition = shadowProj * shadowView*ModelTr*vertex;
 
     worldPos = (ModelTr*vertex).xyz;
