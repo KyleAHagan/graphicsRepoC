@@ -106,6 +106,6 @@ void main()
         vec3 BRDF = Kd/3.14159 + (FLH * DH)/(4 * GLVH);
         FragColor.xyz = Ia * Kd + I*LN * BRDF;
 
-        FragColor = texture2D(shadowMap, shadowIndex); //debugging the moment shadow map
+        //  FragColor = texture2D(shadowMap, shadowIndex); //debugging the moment shadow map
     }
 }
