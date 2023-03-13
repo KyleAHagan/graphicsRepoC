@@ -87,6 +87,8 @@ void main()
     }
     else
     {
+        //float blurredDepth = 1;//new
+
         vec3 N = normalize(normalVec);
         vec3 L = normalize(lightVec);
         vec3 V = normalize(eyeVec);
@@ -103,5 +105,7 @@ void main()
         float DH = (shininess + 2)/(2 * 3.14159) * pow(HN,shininess);
         vec3 BRDF = Kd/3.14159 + (FLH * DH)/(4 * GLVH);
         FragColor.xyz = Ia * Kd + I*LN * BRDF;
+
+        FragColor = texture2D(shadowMap, shadowIndex); //debugging the moment shadow map
     }
 }
