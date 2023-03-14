@@ -26,6 +26,9 @@ public:
     // Bind this FBO's texture to a texture unit.
     void BindTexture(const int unit, const int textureNumber, const int programId, const std::string& name);
 
+    // Bind this FBO's texture to a texture unit as an image.
+    void BindImageTexture(const int unit, const int textureNumber, gl::GLenum readWriteBoth, const int programId, const std::string& name);
+
     // Unbind this FBO's texture from a texture unit.
     void UnbindTexture(const int unit);
 };

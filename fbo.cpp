@@ -118,6 +118,34 @@ void FBO::BindTexture(const int unit, const int textureNumber, const int program
     glUniform1i(loc, unit);
 }
 
+void FBO::BindImageTexture(const int unit, const int textureNumber, const gl::GLenum readWrite, const int programId, const std::string& name)
+{
+    //glActiveTexture((gl::GLenum)((int)GL_TEXTURE0 + unit));
+    //gl::GLenum textureUnit = ((gl::GLenum)((int)GL_TEXTURE0 + unit));
+    if (textureNumber == 0)
+    {
+        //glBindTexture(GL_TEXTURE_2D, textureIDZero);
+        glBindImageTexture(unit, textureIDZero, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
+
+    }
+    else if (textureNumber == 1)
+    {
+        glBindImageTexture(unit, textureIDOne, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
+    }
+    else if (textureNumber == 2)
+    {
+        glBindImageTexture(unit, textureIDTwo, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
+    }
+    else if (textureNumber == 3)
+    {
+        glBindImageTexture(unit, textureIDThree, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
+    }
+
+    int loc = glGetUniformLocation(programId, name.c_str());
+    glUniform1i(loc, unit);
+}
+
+
 void FBO::UnbindTexture(const int unit)
 {  
     glActiveTexture((gl::GLenum)((int)GL_TEXTURE0 + unit));

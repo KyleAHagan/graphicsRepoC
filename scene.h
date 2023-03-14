@@ -80,17 +80,22 @@ public:
     ShaderProgram* lightingProgram;
     // @@ Declare additional shaders if necessary
     ShaderProgram* shadowMapProgram;
+    ShaderProgram* shadowBlurProgram;
     ShaderProgram* lightingProgramDeferred;
     ShaderProgram* localLightingProgram;
 
+    float* blurWeights;
+
     FBO FrameBufferObject;
     FBO shadowMap;
+
 
     // Options menu stuff
     bool show_demo_window;
 
     void InitializeScene();
     void BuildTransforms();
+    void BuildGaussianBlur(int width);
     void DrawMenu();
     void DrawScene();
 
