@@ -159,6 +159,7 @@
     <None Include="README.md" />
     <None Include="room.ply" />
     <None Include="shadowBlur.comp" />
+    <None Include="shadowBlurTwo.comp" />
     <None Include="shadowmap.frag" />
     <None Include="shadowmap.vert" />
   </ItemGroup>

@@ -1,5 +1,5 @@
 #version 430
-layout(local_size_x = 128, local_size_y = 1, local_size_z = 1) in; //declares thread group size
+layout(local_size_x = 1, local_size_y = 128, local_size_z = 1) in; //declares thread group size
 
 uniform int blurSize;
 uniform blurKernel {float weights[101];}; //Declares a uniform block
@@ -14,13 +14,13 @@ void main()
 //...
 ivec2 gpos = ivec2(gl_GlobalInvocationID.xy); //Combo of groupID, groupSize, and localID
 
-uint i = gl_LocalInvocationID.x; //Local thread id in the 128x1 thread groups
+uint i = gl_LocalInvocationID.y; //Local thread id in the 1x128 thread groups
 
-v[i] = imageLoad(src, gpos+(-blurSize,0)).x; //read an image pixel at an ivec2(.,.) position
+v[i] = imageLoad(src, gpos+(0,-blurSize)).x; //read an image pixel at an ivec2(.,.) position
 
 if (i<2*blurSize)
 {
-	v[i+128] = imageLoad(src, gpos+(128-blurSize,0)).x; //read extra 2*w pixels  //NOTES: jan 27, 48minutes
+	v[i+128] = imageLoad(src, gpos+(0,128-blurSize)).x; //read extra 2*w pixels  //NOTES: jan 27, 48minutes
 }
 
 barrier();

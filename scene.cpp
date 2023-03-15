@@ -16,6 +16,7 @@ const bool fullPolyCount = true; // Use false when emulating the graphics pipeli
 
 #include "math.h"
 #include <cmath>//new
+#include <vector>
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
@@ -245,6 +246,10 @@ void Scene::InitializeScene()
     shadowBlurProgram = new ShaderProgram();
     shadowBlurProgram->AddShader("shadowBlur.comp", GL_COMPUTE_SHADER);
     shadowBlurProgram->LinkProgram();
+
+    shadowBlurTwoProgram = new ShaderProgram();
+    shadowBlurTwoProgram->AddShader("shadowBlurTwo.comp", GL_COMPUTE_SHADER);
+    shadowBlurTwoProgram->LinkProgram();
 
 
     // Create the lighting shader program from source code files.
@@ -487,9 +492,9 @@ void Scene::BuildTransforms()
 
 void Scene::BuildGaussianBlur(int blurWidth)
 {
-    delete blurWeights;
+    delete[] blurWeights;
     blurWeights = new float[2 * blurWidth + 1];
-
+    float blurTotal = 0;
     for (int iterator = 0; iterator < (2 * blurWidth + 1); iterator++)
     {
         float blurWeight;
@@ -500,16 +505,21 @@ void Scene::BuildGaussianBlur(int blurWidth)
         float blurIndexOverSSquared = pow((blurIndex / s), 2);//debug
         blurWeight = exp((-1.0/ 2.0)*pow((blurIndex/s),2));
         blurWeights[iterator] = blurWeight;
+        blurTotal += blurWeight;
     }
-    float blurTotal = 0;
-    for (int iterator = 0; iterator < (2 * blurWidth + 1); iterator++)
-    {
-        blurTotal += blurWeights[iterator];
-    }
+
     for (int iterator = 0; iterator < (2 * blurWidth + 1); iterator++)
     {
         blurWeights[iterator] = blurWeights[iterator] / blurTotal;
     }
+
+    //this section exists for debugging.
+    std::vector<float> blurweights2;
+    for (int iterator = 0; iterator < (2 * blurWidth + 1); iterator++)
+    {
+        blurweights2.push_back(blurWeights[iterator]);
+    }
+    float breakpoint = 2;
 }
 
 
@@ -675,7 +685,7 @@ void Scene::DrawScene()
 
 
     ////////////////////////////////////////////////////////////////////////////////
-    // Blur Shadow Map pass
+    // Blur Shadow Map pass 1
     ////////////////////////////////////////////////////////////////////////////////
     CHECKERROR;
     shadowBlurProgram->UseShader();
@@ -708,6 +718,43 @@ void Scene::DrawScene()
     glDispatchCompute(width / 128, height, 1); // Tiles WxH image groups sized 128x1
     CHECKERROR;
     shadowBlurProgram->UnuseShader();
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Blur Shadow Map pass 2
+    ////////////////////////////////////////////////////////////////////////////////
+    CHECKERROR;
+    shadowBlurTwoProgram->UseShader();
+    programId = shadowBlurTwoProgram->programId;
+
+    glGenBuffers(1, &blockID); //Generates block
+    bindpoint = 1;//"bindpoint = ?; //Start at 0 increment for other blocks"
+    //Send block of weights to the shader as a uniform block
+    loc = glGetUniformBlockIndex(programId, "blurKernel");
+    glUniformBlockBinding(programId, loc, bindpoint);
+    glBindBuffer(GL_UNIFORM_BUFFER, blockID);
+    glBindBufferBase(GL_UNIFORM_BUFFER, bindpoint, blockID);
+    CHECKERROR;
+    glBufferData(GL_UNIFORM_BUFFER, 4 * (blursize * 2 + 1), blurWeights, GL_STATIC_DRAW);
+    CHECKERROR;
+    loc = glGetUniformLocation(programId, "blurSize");
+    glUniform1i(loc, blursize);
+    //loc = glGetUniformLocation(programId, "src");
+    //glBindImageTexture(0, textureID, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+    //glUniform1i(loc, imageUnit);
+
+    //loc = glGetUniformLocation(programId, "dst");
+    //glBindImageTexture(1, textureID, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+    //glUniform1i(loc, imageUnit);
+
+    shadowMap.BindImageTexture(0, 0, gl::GLenum::GL_READ_ONLY, programId, "src");
+    shadowMap.BindImageTexture(1, 2, gl::GLenum::GL_WRITE_ONLY, programId, "dst");
+    CHECKERROR;
+    glDispatchCompute(width, height / 128, 1); // Tiles WxH image groups sized 128x1
+    CHECKERROR;
+    shadowBlurTwoProgram->UnuseShader();
+
+
     ////////////////////////////////////////////////////////////////////////////////
     // Deferred Lighting using stored values pass
     ////////////////////////////////////////////////////////////////////////////////
@@ -728,7 +775,7 @@ void Scene::DrawScene()
     FrameBufferObject.BindTexture(2, 2, programId, "g2");
     FrameBufferObject.BindTexture(3, 3, programId, "g3");
 
-    shadowMap.BindTexture(4, 1, programId, "shadowMap");//? should go from 0 to 1 once the blur is putting the completed blur in 1.
+    shadowMap.BindTexture(4, 0, programId, "shadowMap");//0:Raw shadow map. 1: Blur on one axis. 2: Blur on both axes.
 
     CHECKERROR;
 

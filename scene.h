@@ -81,6 +81,7 @@ public:
     // @@ Declare additional shaders if necessary
     ShaderProgram* shadowMapProgram;
     ShaderProgram* shadowBlurProgram;
+    ShaderProgram* shadowBlurTwoProgram;
     ShaderProgram* lightingProgramDeferred;
     ShaderProgram* localLightingProgram;
 
