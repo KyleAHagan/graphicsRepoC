@@ -125,20 +125,20 @@ void FBO::BindImageTexture(const int unit, const int textureNumber, const gl::GL
     if (textureNumber == 0)
     {
         //glBindTexture(GL_TEXTURE_2D, textureIDZero);
-        glBindImageTexture(unit, textureIDZero, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
+        glBindImageTexture((unit), textureIDZero, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
 
     }
     else if (textureNumber == 1)
     {
-        glBindImageTexture(unit, textureIDOne, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
+        glBindImageTexture((unit), textureIDOne, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
     }
     else if (textureNumber == 2)
     {
-        glBindImageTexture(unit, textureIDTwo, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
+        glBindImageTexture((unit), textureIDTwo, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
     }
     else if (textureNumber == 3)
     {
-        glBindImageTexture(unit, textureIDThree, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
+        glBindImageTexture((unit), textureIDThree, 0, GL_FALSE, 0, readWrite, GL_RGBA32F);
     }
 
     int loc = glGetUniformLocation(programId, name.c_str());

@@ -7,26 +7,31 @@ uniform blurKernel {float weights[101];}; //Declares a uniform block
 layout (rgba32f) uniform readonly image2D src; //source image as a 4 channel 32 bit float readonly
 layout (rgba32f) uniform writeonly image2D dst; //destination image as a 4 channel 32 bit float writeonly
 
-shared float[128+101]; //Variable shared with other threads in the 128x1 thread group
+shared float v[128+101]; //Variable shared with other threads in the 128x1 thread group
 
 void main()
 {
 //...
-//ivec2 gpos = ivec2(gl_GlobalInvocationID.xy); //Combo of groupID, groupSize, and localID
-//
-//uint i = gl_LocalInvocationID.x; //Local thread id in the 128x1 thread groups
+ivec2 gpos = ivec2(gl_GlobalInvocationID.xy); //Combo of groupID, groupSize, and localID
 
-//v[i] = imageLoad(src, gpos+//...); //read an image pixel at an ivec2(.,.) position
-//
-//if (i<2*w)
-//{
-//	v[1+128] = imageLoad(src, gpos+//...); //read extra 2*w pixels
-//}
-//
-//barrier();
-//
-////...
-//
-//imageStore(dst,gpos, //...); //Write to destination image
+uint i = gl_LocalInvocationID.x; //Local thread id in the 128x1 thread groups
+
+v[i] = imageLoad(src, gpos+(-blurSize,0)).x; //read an image pixel at an ivec2(.,.) position
+
+if (i<2*blurSize)
+{
+	v[i+128] = imageLoad(src, gpos+(128-blurSize,0)).x; //read extra 2*w pixels  //NOTES: jan 27, 48minutes
+}
+
+barrier();
+
+float weightedAverage = 0;
+
+for(int itr=0;itr<101;itr++)
+{
+	weightedAverage += weights[itr] * v[itr]; //NOTES: jan 27 50m. "weights[0...2w] pixels v[i ... i+2w]"
+}
+
+imageStore(dst,gpos, vec4(weightedAverage)); //Write to destination image
 
 }

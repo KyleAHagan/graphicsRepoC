@@ -487,6 +487,7 @@ void Scene::BuildTransforms()
 
 void Scene::BuildGaussianBlur(int blurWidth)
 {
+    delete blurWeights;
     blurWeights = new float[2 * blurWidth + 1];
 
     for (int iterator = 0; iterator < (2 * blurWidth + 1); iterator++)
@@ -727,7 +728,7 @@ void Scene::DrawScene()
     FrameBufferObject.BindTexture(2, 2, programId, "g2");
     FrameBufferObject.BindTexture(3, 3, programId, "g3");
 
-    shadowMap.BindTexture(4, 0, programId, "shadowMap");//? should go from 0 to 1 once the blur is putting the completed blur in 1.
+    shadowMap.BindTexture(4, 1, programId, "shadowMap");//? should go from 0 to 1 once the blur is putting the completed blur in 1.
 
     CHECKERROR;
 
