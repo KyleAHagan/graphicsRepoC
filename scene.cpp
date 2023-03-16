@@ -493,7 +493,7 @@ void Scene::BuildTransforms()
 void Scene::BuildGaussianBlur(int blurWidth)
 {
     delete[] blurWeights;
-    blurWeights = new float[2 * blurWidth + 1];
+    blurWeights = new float[2 * 50 + 1];
     float blurTotal = 0;
     for (int iterator = 0; iterator < (2 * blurWidth + 1); iterator++)
     {
@@ -506,6 +506,11 @@ void Scene::BuildGaussianBlur(int blurWidth)
         blurWeight = exp((-1.0/ 2.0)*pow((blurIndex/s),2));
         blurWeights[iterator] = blurWeight;
         blurTotal += blurWeight;
+    }
+
+    for (int iterator = (2 * blurWidth + 1); iterator < (2 * 50 + 1); iterator++)
+    {
+        blurWeights[iterator] = 0;
     }
 
     for (int iterator = 0; iterator < (2 * blurWidth + 1); iterator++)
@@ -551,7 +556,7 @@ void Scene::DrawScene()
     }
 
     BuildTransforms();
-    int blursize = 50;
+    int blursize = 10;
     BuildGaussianBlur(blursize);
     // The lighting algorithm needs the inverse of the WorldView matrix
     WorldInverse = glm::inverse(WorldView);
@@ -775,7 +780,7 @@ void Scene::DrawScene()
     FrameBufferObject.BindTexture(2, 2, programId, "g2");
     FrameBufferObject.BindTexture(3, 3, programId, "g3");
 
-    shadowMap.BindTexture(4, 0, programId, "shadowMap");//0:Raw shadow map. 1: Blur on one axis. 2: Blur on both axes.
+    shadowMap.BindTexture(4, 2, programId, "shadowMap");//0:Raw shadow map. 1: Blur on one axis. 2: Blur on both axes.
 
     CHECKERROR;
 

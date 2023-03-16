@@ -43,9 +43,9 @@ void main()
     //FragData[0]= vec4(shadowPosition.w)/100;
     float zbar = ((shadowPosition.w - 30)/(150-30));
     FragData[0].x = zbar;
-    FragData[0].y = zbar * zbar;//used in debugging
-    FragData[0].z = zbar * zbar * zbar;//used in debugging
-    FragData[0].w = zbar * zbar * zbar * zbar;//used in debugging
+    FragData[0].y = zbar * zbar;
+    FragData[0].z = zbar * zbar * zbar;
+    FragData[0].w = zbar * zbar * zbar * zbar;
 
    // FragData[1]= shadowPosition;
    // FragData[2]= shadowPosition;
