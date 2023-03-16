@@ -86,7 +86,7 @@ void main()
     if (shadowCoord.w > 0 && shadowIndex.x >= 0 && shadowIndex.x <= 1 && shadowIndex.y >= 0 && shadowIndex.y <= 1)
     {
         //lightDepth = texture2D(shadowMap, shadowIndex).x;
-        pixelDepth = ((shadowCoord.w - 20)/(150-20));
+        pixelDepth = ((shadowCoord.w - 40)/(120-40));
         pixelDepthSquared = pixelDepth * pixelDepth;
         Bvalues = texture2D(shadowMap, shadowIndex); //debugging the moment shadow map
 
@@ -105,7 +105,7 @@ void main()
         float c3hat = (pixelDepthSquared - c * c1hat - e * c2hat)/f;
 
         float c3 = c3hat/f;
-        float c2 = (c2hat - e * c3hat)/d;
+        float c2 = (c2hat - e * c3)/d;
         float c1 = (c1hat - b * c2 - c * c3)/a;
 
         //quadratic: (-b +-sqrt(b^2 -4ac)/2a)
@@ -159,11 +159,11 @@ void main()
 //
 //
 //        }
-
-        if(isnan(z3))
-        {
-            probabilityInShadow = 0;
-        }
+//
+//        if(isnan(z2))
+//        {
+//            probabilityInShadow = 0;
+//        }
 
         vec3 N = normalize(normalVec);
         vec3 L = normalize(lightVec);

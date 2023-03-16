@@ -128,7 +128,7 @@ Object* SphereOfSpheres(Shape* SpherePolygons)
                 hue, glm::vec3(1.0, 1.0, 1.0), 120.0);
             float s = sin(row);
             float c = cos(row);
-            ob->add(sp, Rotate(2, angle) * Translate(c, 0, s + 0.1) * Scale(0.075 * c, 0.075 * c, 0.075 * c));
+            ob->add(sp, Rotate(2, angle) * Translate(c, 0, s) * Scale(0.075 * c, 0.075 * c, 0.075 * c));
         }
     return ob;
 }
@@ -557,7 +557,7 @@ void Scene::DrawScene()
     }
 
     BuildTransforms();
-    int blursize = 5;
+    int blursize = 10;
     BuildGaussianBlur(blursize);
     // The lighting algorithm needs the inverse of the WorldView matrix
     WorldInverse = glm::inverse(WorldView);
