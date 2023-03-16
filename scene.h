@@ -47,7 +47,7 @@ public:
     glm::vec3 lightPos;
     // @@ Perhaps declare additional scene lighting values here. (lightVal, lightAmb)
     
-
+    int shadowMapWidth = 2048, shadowMapHeight = 2048;
 
     bool drawReflective;
     bool nav;

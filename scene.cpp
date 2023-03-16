@@ -128,7 +128,7 @@ Object* SphereOfSpheres(Shape* SpherePolygons)
                 hue, glm::vec3(1.0, 1.0, 1.0), 120.0);
             float s = sin(row);
             float c = cos(row);
-            ob->add(sp, Rotate(2, angle) * Translate(c, 0, s) * Scale(0.075 * c, 0.075 * c, 0.075 * c));
+            ob->add(sp, Rotate(2, angle) * Translate(c, 0, s + 0.1) * Scale(0.075 * c, 0.075 * c, 0.075 * c));
         }
     return ob;
 }
@@ -197,7 +197,8 @@ void Scene::InitializeScene()
     lightDist = 100.0;
     // @@ Perhaps initialize additional scene lighting values here. (lightVal, lightAmb)
     
-    shadowMap.CreateFBO(1024, 1024);
+
+    shadowMap.CreateFBO(shadowMapWidth, shadowMapHeight);
 
     key = 0;
     nav = false;
@@ -556,7 +557,7 @@ void Scene::DrawScene()
     }
 
     BuildTransforms();
-    int blursize = 1;
+    int blursize = 5;
     BuildGaussianBlur(blursize);
     // The lighting algorithm needs the inverse of the WorldView matrix
     WorldInverse = glm::inverse(WorldView);
@@ -643,7 +644,7 @@ void Scene::DrawScene()
     programId = shadowMapProgram->programId;
 
     // Set the viewport, and clear the screen
-    glViewport(0, 0, 1024, 1024);//NOTES: This is the shadowmap's dimensions
+    glViewport(0, 0, shadowMapWidth, shadowMapHeight);
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -720,7 +721,7 @@ void Scene::DrawScene()
     shadowMap.BindImageTexture(0, 0, gl::GLenum::GL_READ_ONLY, programId, "src");
     shadowMap.BindImageTexture(1, 1, gl::GLenum::GL_WRITE_ONLY, programId, "dst");
     CHECKERROR;
-    glDispatchCompute(width / 128, height, 1); // Tiles WxH image groups sized 128x1
+    glDispatchCompute(shadowMapWidth / 128, shadowMapHeight, 1); // Tiles WxH image groups sized 128x1
     CHECKERROR;
     shadowBlurProgram->UnuseShader();
 
@@ -755,7 +756,7 @@ void Scene::DrawScene()
     shadowMap.BindImageTexture(0, 0, gl::GLenum::GL_READ_ONLY, programId, "src");
     shadowMap.BindImageTexture(1, 2, gl::GLenum::GL_WRITE_ONLY, programId, "dst");
     CHECKERROR;
-    glDispatchCompute(width, height / 128, 1); // Tiles WxH image groups sized 128x1
+    glDispatchCompute(shadowMapWidth, shadowMapHeight / 128, 1); // Tiles WxH image groups sized 128x1
     CHECKERROR;
     shadowBlurTwoProgram->UnuseShader();
 

@@ -73,7 +73,7 @@ void main()
     vec3 Kd = diffuse; 
    
     vec4 Bvalues;
-    float alpha = 0.000;
+    float alpha = 0.001;
 
     vec3 fragColor;
     if (shadowCoord.w > 0)
@@ -86,7 +86,7 @@ void main()
     if (shadowCoord.w > 0 && shadowIndex.x >= 0 && shadowIndex.x <= 1 && shadowIndex.y >= 0 && shadowIndex.y <= 1)
     {
         //lightDepth = texture2D(shadowMap, shadowIndex).x;
-        pixelDepth = ((shadowCoord.w - 30)/(150-30));
+        pixelDepth = ((shadowCoord.w - 20)/(150-20));
         pixelDepthSquared = pixelDepth * pixelDepth;
         Bvalues = texture2D(shadowMap, shadowIndex); //debugging the moment shadow map
 
@@ -124,7 +124,7 @@ void main()
         else if(pixelDepth <= z3)
         {
             probabilityInShadow = (pixelDepth * z3 - Bvalues.x * (pixelDepth + z3) + Bvalues.y)/((z3 - z2) * (pixelDepth - z2));
-             //probabilityInShadow = 0.0;
+             //probabilityInShadow = 0.8;
 //            if(isnan(c2))
 //        {
 //            probabilityInShadow = 0.5;
@@ -133,21 +133,21 @@ void main()
         else
         {
             probabilityInShadow = 1 - (z2 * z3 - Bvalues.x * (z2 + z3) + Bvalues.y)/((pixelDepth - z2) * (pixelDepth - z3));
-            //probabilityInShadow = 0.0;
+            //probabilityInShadow = 0.2;
 //        if(isnan(c2))
 //        {
 //            probabilityInShadow = 0.5;
 //        }
         }
 
-//        if(probabilityInShadow < 0.5) //debug
-//        {
-//            probabilityInShadow = 0.5;
-//        }
-//        if(probabilityInShadow > 0.5)
-//        {
-//            probabilityInShadow = 0.5;
-//        }
+        if(probabilityInShadow < 0) //debug
+        {
+            probabilityInShadow = 0;
+        }
+        if(probabilityInShadow > 1)
+        {
+            probabilityInShadow = 1;
+        }
 //        if(isnan(probabilityInShadow))
 //        {
 //            probabilityInShadow = 0.5;
@@ -159,6 +159,11 @@ void main()
 //
 //
 //        }
+
+        if(isnan(z3))
+        {
+            probabilityInShadow = 0;
+        }
 
         vec3 N = normalize(normalVec);
         vec3 L = normalize(lightVec);
@@ -175,6 +180,7 @@ void main()
         float DH = (shininess + 2)/(2 * 3.14159) * pow(HN,shininess);
         vec3 BRDF = Kd/3.14159 + (FLH * DH)/(4 * GLVH);
         FragColor.xyz = Ia * Kd + (1.0-probabilityInShadow) *(I*LN * BRDF);
+        //FragColor.xyz = vec3(Bvalues.x);
 
 
     }

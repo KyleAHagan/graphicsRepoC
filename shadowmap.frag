@@ -41,7 +41,7 @@ void main()
 
     //FragColor.xyz = vec3(shadowPosition.w)/100;
     //FragData[0]= vec4(shadowPosition.w)/100;
-    float zbar = ((shadowPosition.w - 30)/(150-30));
+    float zbar = ((shadowPosition.w - 20)/(150-20));
     FragData[0].x = zbar;
     FragData[0].y = zbar * zbar;
     FragData[0].z = zbar * zbar * zbar;
