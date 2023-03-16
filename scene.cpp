@@ -556,7 +556,7 @@ void Scene::DrawScene()
     }
 
     BuildTransforms();
-    int blursize = 10;
+    int blursize = 1;
     BuildGaussianBlur(blursize);
     // The lighting algorithm needs the inverse of the WorldView matrix
     WorldInverse = glm::inverse(WorldView);

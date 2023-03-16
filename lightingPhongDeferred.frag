@@ -42,6 +42,7 @@ vec2 shadowIndex;
 
 float lightDepth;
 float pixelDepth;
+float pixelDepthSquared;
 
 uniform vec2 WindowSize;
 
@@ -51,69 +52,6 @@ uniform vec2 randXY;
 
 void main()
 {
-//    vec2 xy = gl_FragCoord.xy/WindowSize.xy;
-//    vec3 worldPos = texture2D(g0, xy).xyz;
-//    vec3 normalVec = texture2D(g1, xy).xyz; 
-//    vec3 diffuse =  texture2D(g2, xy).xyz;
-//    vec3 specular = texture2D(g3, xy).xyz;
-//    float shininess = texture2D(g3, xy).w;
-//
-//    vec3 eyePos = (WorldInverse*vec4(0,0,0,1)).xyz;
-//    vec3 lightVec = lightPos - worldPos;
-//    vec3 eyeVec = eyePos - worldPos;
-//
-//    shadowCoord = shadowMatrix * vec4(worldPos,1);
-//
-//
-//    vec3 ONE = vec3(1.0, 1.0, 1.0);
-//
-//    vec3 I = vec3(2.0, 2.0, 2.0);
-//    vec3 Ia = 0.1*ONE;
-//    vec3 Kd = diffuse; 
-//   
-//    vec4 Bvalues;
-//
-//    vec3 fragColor;
-//    if (shadowCoord.w > 0)
-//    {
-//        shadowIndex = shadowCoord.xy/shadowCoord.w;
-//    }
-//
-//
-//    float probabilityInShadow = 1;
-//    if (shadowCoord.w > 0 && shadowIndex.x >= 0 && shadowIndex.x <= 1 && shadowIndex.y >= 0 && shadowIndex.y <= 1)
-//    {
-//        lightDepth = texture2D(shadowMap, shadowIndex).x;
-//        pixelDepth = ((shadowCoord.w - 30)/(150-30));
-//        Bvalues = texture2D(shadowMap, shadowIndex); //debugging the moment shadow map
-//
-//
-//
-//    }
-//
-//    vec3 N = normalize(normalVec);
-//    vec3 L = normalize(lightVec);
-//    vec3 V = normalize(eyeVec);
-//
-//    vec3 H = normalize(L+V);
-//    float LN = max(dot(L,N),0.0);
-//    float HN = max(dot(H,N),0.0);
-//    float LH = max(dot(L,H),0.0);
-//
-//
-//    vec3 FLH = specular + ((1,1,1) - specular) * pow((1-LH),5);
-//    float GLVH = pow(LH,2);
-//    float DH = (shininess + 2)/(2 * 3.14159) * pow(HN,shininess);
-//    vec3 BRDF = Kd/3.14159 + (FLH * DH)/(4 * GLVH);
-//    FragColor.xyz = Ia * Kd + (1-probabilityInShadow) *(I*LN * BRDF);
-
-
-
-
-
-
-
-
     vec2 xy = gl_FragCoord.xy/WindowSize.xy;
     vec3 worldPos = texture2D(g0, xy).xyz;
     vec3 normalVec = texture2D(g1, xy).xyz; 
@@ -133,29 +71,94 @@ void main()
     vec3 I = vec3(2.0, 2.0, 2.0);
     vec3 Ia = 0.1*ONE;
     vec3 Kd = diffuse; 
+   
+    vec4 Bvalues;
+    float alpha = 0.000;
 
     vec3 fragColor;
     if (shadowCoord.w > 0)
     {
         shadowIndex = shadowCoord.xy/shadowCoord.w;
     }
+
+
+    float probabilityInShadow = 0;
     if (shadowCoord.w > 0 && shadowIndex.x >= 0 && shadowIndex.x <= 1 && shadowIndex.y >= 0 && shadowIndex.y <= 1)
     {
-        lightDepth = texture2D(shadowMap, shadowIndex).x;
+        //lightDepth = texture2D(shadowMap, shadowIndex).x;
         pixelDepth = ((shadowCoord.w - 30)/(150-30));
-        FragColor = (texture2D(shadowMap, shadowIndex)); //debugging the moment shadow map
-    }
-    else
-    {
-        FragColor = vec4(0,0,0,0); //debugging the moment shadow map
-    }
-    if(pixelDepth > lightDepth + 0.0001)
-    {
-        //FragColor.xyz = Ia * Kd;
-    }
-    else
-    {
-        //float blurredDepth = 1;
+        pixelDepthSquared = pixelDepth * pixelDepth;
+        Bvalues = texture2D(shadowMap, shadowIndex); //debugging the moment shadow map
+
+
+        Bvalues = (1-alpha)*Bvalues + (alpha * 0.5);
+
+        float a = max(sqrt(1),0.0001);
+        float b = (Bvalues.x)/a;
+        float c = (Bvalues.y)/a;
+        float d = max(sqrt((Bvalues.y)-(b*b)),0.0001);
+        float e = ((Bvalues.z) - (b *c))/d;
+        float f = max(sqrt((Bvalues.w) - (c*c) - (e*e)),0.0001);
+
+        float c1hat = 1/a;
+        float c2hat = (pixelDepth - b * c1hat)/d;
+        float c3hat = (pixelDepthSquared - c * c1hat - e * c2hat)/f;
+
+        float c3 = c3hat/f;
+        float c2 = (c2hat - e * c3hat)/d;
+        float c1 = (c1hat - b * c2 - c * c3)/a;
+
+        //quadratic: (-b +-sqrt(b^2 -4ac)/2a)
+        float z2 = (-c2 + sqrt((c2*c2) - (4 *c3 * c1)))/(2 * c3);
+        float z3 = (-c2 - sqrt((c2*c2) - (4 *c3 * c1)))/(2 * c3);
+        if(z2>z3)
+        {
+            float temp = z3;
+            z3 = z2;
+            z2 = temp;
+        }
+        if(pixelDepth <= z2)
+        {
+            probabilityInShadow = 0.0;
+        }
+        else if(pixelDepth <= z3)
+        {
+            probabilityInShadow = (pixelDepth * z3 - Bvalues.x * (pixelDepth + z3) + Bvalues.y)/((z3 - z2) * (pixelDepth - z2));
+             //probabilityInShadow = 0.0;
+//            if(isnan(c2))
+//        {
+//            probabilityInShadow = 0.5;
+//        }
+        }
+        else
+        {
+            probabilityInShadow = 1 - (z2 * z3 - Bvalues.x * (z2 + z3) + Bvalues.y)/((pixelDepth - z2) * (pixelDepth - z3));
+            //probabilityInShadow = 0.0;
+//        if(isnan(c2))
+//        {
+//            probabilityInShadow = 0.5;
+//        }
+        }
+
+//        if(probabilityInShadow < 0.5) //debug
+//        {
+//            probabilityInShadow = 0.5;
+//        }
+//        if(probabilityInShadow > 0.5)
+//        {
+//            probabilityInShadow = 0.5;
+//        }
+//        if(isnan(probabilityInShadow))
+//        {
+//            probabilityInShadow = 0.5;
+//        }
+//        probabilityInShadow = 0.9;
+//        if(((z3 - z2) * (pixelDepth - z2)) == 0)
+//        {
+//        probabilityInShadow = 0.1;
+//
+//
+//        }
 
         vec3 N = normalize(normalVec);
         vec3 L = normalize(lightVec);
@@ -165,15 +168,83 @@ void main()
         float LN = max(dot(L,N),0.0);
         float HN = max(dot(H,N),0.0);
         float LH = max(dot(L,H),0.0);
- 
+
 
         vec3 FLH = specular + ((1,1,1) - specular) * pow((1-LH),5);
         float GLVH = pow(LH,2);
         float DH = (shininess + 2)/(2 * 3.14159) * pow(HN,shininess);
         vec3 BRDF = Kd/3.14159 + (FLH * DH)/(4 * GLVH);
-        //FragColor.xyz = Ia * Kd + I*LN * BRDF;
+        FragColor.xyz = Ia * Kd + (1.0-probabilityInShadow) *(I*LN * BRDF);
 
 
     }
+    else
+    {
+        FragColor.xyz = Ia * Kd;
+    }
+
+
+
+//    vec2 xy = gl_FragCoord.xy/WindowSize.xy;
+//    vec3 worldPos = texture2D(g0, xy).xyz;
+//    vec3 normalVec = texture2D(g1, xy).xyz; 
+//    vec3 diffuse =  texture2D(g2, xy).xyz;
+//    vec3 specular = texture2D(g3, xy).xyz;
+//    float shininess = texture2D(g3, xy).w;
+//
+//    vec3 eyePos = (WorldInverse*vec4(0,0,0,1)).xyz;
+//    vec3 lightVec = lightPos - worldPos;
+//    vec3 eyeVec = eyePos - worldPos;
+//
+//    shadowCoord = shadowMatrix * vec4(worldPos,1);
+//
+//
+//    vec3 ONE = vec3(1.0, 1.0, 1.0);
+//
+//    vec3 I = vec3(2.0, 2.0, 2.0);
+//    vec3 Ia = 0.1*ONE;
+//    vec3 Kd = diffuse; 
+//
+//    vec3 fragColor;
+//    if (shadowCoord.w > 0)
+//    {
+//        shadowIndex = shadowCoord.xy/shadowCoord.w;
+//    }
+//    if (shadowCoord.w > 0 && shadowIndex.x >= 0 && shadowIndex.x <= 1 && shadowIndex.y >= 0 && shadowIndex.y <= 1)
+//    {
+//        lightDepth = texture2D(shadowMap, shadowIndex).x;
+//        pixelDepth = ((shadowCoord.w - 30)/(150-30));
+//        FragColor = (texture2D(shadowMap, shadowIndex)); //debugging the moment shadow map
+//    }
+//    else
+//    {
+//        FragColor = vec4(0,0,0,0); //debugging the moment shadow map
+//    }
+//    if(pixelDepth > lightDepth + 0.0001)
+//    {
+//        //FragColor.xyz = Ia * Kd;
+//    }
+//    else
+//    {
+//        //float blurredDepth = 1;
+//
+//        vec3 N = normalize(normalVec);
+//        vec3 L = normalize(lightVec);
+//        vec3 V = normalize(eyeVec);
+//
+//        vec3 H = normalize(L+V);
+//        float LN = max(dot(L,N),0.0);
+//        float HN = max(dot(H,N),0.0);
+//        float LH = max(dot(L,H),0.0);
+// 
+//
+//        vec3 FLH = specular + ((1,1,1) - specular) * pow((1-LH),5);
+//        float GLVH = pow(LH,2);
+//        float DH = (shininess + 2)/(2 * 3.14159) * pow(HN,shininess);
+//        vec3 BRDF = Kd/3.14159 + (FLH * DH)/(4 * GLVH);
+//        //FragColor.xyz = Ia * Kd + I*LN * BRDF;
+//
+//
+//    }
 
 }
