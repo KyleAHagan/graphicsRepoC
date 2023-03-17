@@ -19,7 +19,7 @@ void main()
 
     gl_Position = shadowProj * shadowView*ModelTr*vertex;
 
-    shadowPosition = shadowProj * shadowView*ModelTr*vertex;
+    shadowPosition = gl_Position;
 
     worldPos = (ModelTr*vertex).xyz;
 

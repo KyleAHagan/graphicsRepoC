@@ -73,7 +73,7 @@ void main()
     vec3 Kd = diffuse; 
    
     vec4 Bvalues;
-    float alpha = 0.001;
+    float alpha = 0.000001;//0.001 in teacher's version
 
     vec3 fragColor;
     if (shadowCoord.w > 0)
@@ -86,21 +86,21 @@ void main()
     if (shadowCoord.w > 0 && shadowIndex.x >= 0 && shadowIndex.x <= 1 && shadowIndex.y >= 0 && shadowIndex.y <= 1)
     {
         //lightDepth = texture2D(shadowMap, shadowIndex).x;
-        pixelDepth = ((shadowCoord.w - 40)/(120-40));
+        pixelDepth = ((shadowCoord.w - 20)/(150-20));
         pixelDepthSquared = pixelDepth * pixelDepth;
         Bvalues = texture2D(shadowMap, shadowIndex); //debugging the moment shadow map
 
 
         Bvalues = (1-alpha)*Bvalues + (alpha * 0.5);
 
-        float a = max(sqrt(1),0.0001);
-        float b = (Bvalues.x)/a;
-        float c = (Bvalues.y)/a;
+        float a = 1;//In our case a is always 1. max(sqrt(1),0.0001)
+        float b = Bvalues.x;//In our case a is always 1. (Bvalues.x)/a;
+        float c = Bvalues.y;//In our case a is always 1. (Bvalues.y)/a;
         float d = max(sqrt((Bvalues.y)-(b*b)),0.0001);
         float e = ((Bvalues.z) - (b *c))/d;
         float f = max(sqrt((Bvalues.w) - (c*c) - (e*e)),0.0001);
 
-        float c1hat = 1/a;
+        float c1hat = 1;//In our case z1 and a are always 1. z1/a
         float c2hat = (pixelDepth - b * c1hat)/d;
         float c3hat = (pixelDepthSquared - c * c1hat - e * c2hat)/f;
 
@@ -124,7 +124,7 @@ void main()
         else if(pixelDepth <= z3)
         {
             probabilityInShadow = (pixelDepth * z3 - Bvalues.x * (pixelDepth + z3) + Bvalues.y)/((z3 - z2) * (pixelDepth - z2));
-             //probabilityInShadow = 0.8;
+            //probabilityInShadow = 0.8;
 //            if(isnan(c2))
 //        {
 //            probabilityInShadow = 0.5;
@@ -132,8 +132,8 @@ void main()
         }
         else
         {
-            probabilityInShadow = 1 - (z2 * z3 - Bvalues.x * (z2 + z3) + Bvalues.y)/((pixelDepth - z2) * (pixelDepth - z3));
-            //probabilityInShadow = 0.2;
+            probabilityInShadow = 1 - (((z2 * z3) - (Bvalues.x * (z2 + z3)) + Bvalues.y)/((pixelDepth - z2) * (pixelDepth - z3)));
+            //probabilityInShadow = 0;
 //        if(isnan(c2))
 //        {
 //            probabilityInShadow = 0.5;
@@ -160,10 +160,13 @@ void main()
 //
 //        }
 //
-//        if(isnan(z2))
+//        if(isnan(z2) ||isnan(z3) || isnan(c1) || isnan(c2) || isnan(c3) || isnan(c1hat) || isnan(c2hat) || isnan(c3hat))
 //        {
-//            probabilityInShadow = 0;
+//            probabilityInShadow = 1;
 //        }
+
+        //probabilityInShadow = probabilityInShadow * probabilityInShadow;
+        
 
         vec3 N = normalize(normalVec);
         vec3 L = normalize(lightVec);
@@ -180,7 +183,9 @@ void main()
         float DH = (shininess + 2)/(2 * 3.14159) * pow(HN,shininess);
         vec3 BRDF = Kd/3.14159 + (FLH * DH)/(4 * GLVH);
         FragColor.xyz = Ia * Kd + (1.0-probabilityInShadow) *(I*LN * BRDF);
-        //FragColor.xyz = vec3(Bvalues.x);
+
+        //debug
+        //FragColor = vec4(Bvalues.x);
 
 
     }

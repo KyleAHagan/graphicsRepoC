@@ -479,7 +479,7 @@ void Scene::BuildTransforms()
     WorldProj = Perspective((ry*width)/height, ry, front, (mode==0) ? 1000 : back);
 
 
-    shadowProj = Perspective(40.0f / lightDist, 40.0f / lightDist, front, back);
+    shadowProj = Perspective(40.0f / lightDist, 40.0f / lightDist, front, 150);
     shadowView = LookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
 
     //shadowProj = WorldProj;//DEBUG REMOVE
@@ -557,7 +557,7 @@ void Scene::DrawScene()
     }
 
     BuildTransforms();
-    int blursize = 10;
+    int blursize = 5;
     BuildGaussianBlur(blursize);
     // The lighting algorithm needs the inverse of the WorldView matrix
     WorldInverse = glm::inverse(WorldView);
